@@ -125,7 +125,7 @@ public class LinkedTree<E> implements NAryTree<E> {
         TreeNode<E> parent = checkPosition(p);
         checkPositionOfChildrenList(n, parent);
         TreeNode<E> newNode = new TreeNode<E>(parent, element);
-        parent.getHijos().add(newNode);
+        parent.getHijos().add(n, newNode);
         this.size++;
         return newNode;
     }
@@ -217,29 +217,34 @@ public class LinkedTree<E> implements NAryTree<E> {
 
     @Override
     public Position<E> parent(Position<E> v) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        //throw new UnsupportedOperationException("Not supported yet.");
+        return checkPosition(v).getParent();
 
     }
 
 
     @Override
     public Iterable<? extends Position<E>> children(Position<E> v) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        //throw new UnsupportedOperationException("Not supported yet.");
+        return checkPosition(v).getHijos();
     }
 
     @Override
     public boolean isInternal(Position<E> v) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        //throw new UnsupportedOperationException("Not supported yet.");
+        return !isLeaf(v);
     }
 
     @Override
     public boolean isLeaf(Position<E> v) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        //throw new UnsupportedOperationException("Not supported yet.");
+        return checkPosition(v).getHijos().isEmpty();
     }
 
     @Override
     public boolean isRoot(Position<E> v) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        //throw new UnsupportedOperationException("Not supported yet.");
+        return checkPosition(v).getParent() == null;
     }
 
     @Override
@@ -259,7 +264,7 @@ public class LinkedTree<E> implements NAryTree<E> {
             while (!queue.isEmpty()) {
                 TreeNode<E> toExplore = queue.remove(0);
                 positions.add(toExplore);
-                queue.addAll(node.getHijos());
+                queue.addAll(toExplore.getHijos());
             }
         }
 
