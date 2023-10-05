@@ -1,9 +1,6 @@
 import material.Position;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
+import java.util.*;
 
 
 /**
@@ -81,10 +78,12 @@ public class LCRSTree<E> implements NAryTree<E> {
         public Iterable<? extends Position<T>> devuelveHijos(){
             LinkedHashSet<LCRSnode<T>> setHijos = new LinkedHashSet<LCRSnode<T>>();
             LCRSnode<T> hijo = this.getChild();
-            setHijos.add(hijo);
-            while(hijo.getSibling() != null){
-                hijo = hijo.getSibling();
+            if (hijo != null) {
                 setHijos.add(hijo);
+                while (hijo.getSibling() != null) {
+                    hijo = hijo.getSibling();
+                    setHijos.add(hijo);
+                }
             }
             return setHijos;
         }
@@ -92,25 +91,50 @@ public class LCRSTree<E> implements NAryTree<E> {
         public Collection<LCRSnode<T>> devuelveHijosCollection(){
             LinkedHashSet<LCRSnode<T>> setHijos = new LinkedHashSet<LCRSnode<T>>();
             LCRSnode<T> hijo = this.getChild();
-            setHijos.add(hijo);
-            while(hijo.getSibling() != null){
-                hijo = hijo.getSibling();
+            if (hijo != null) {
                 setHijos.add(hijo);
+                while (hijo.getSibling() != null) {
+                    hijo = hijo.getSibling();
+                    setHijos.add(hijo);
+                }
             }
             return setHijos;
         }
 
-        /*public int descendientes(){
+        public Collection<Position<T>> iteratorSet(){
+
             LCRSnode<T> nodo = this;
-            HashSet<LCRSnode<T>> setHijos = new HashSet<LCRSnode<T>>();
+            LinkedList<LCRSnode<T>> hijosSinRecorrer = new LinkedList<LCRSnode<T>>();
+            LinkedHashSet<Position<T>> setHijos = new LinkedHashSet<Position<T>>();
+            Collection<LCRSnode<T>> hijos = nodo.devuelveHijosCollection();
+            hijosSinRecorrer.addAll(hijos);
+            setHijos.add(nodo);
+            setHijos.addAll(hijos);
+            while (hijosSinRecorrer.size() > 0){
+                LCRSnode<T> hijoActual = hijosSinRecorrer.poll();
+                hijos = hijoActual.devuelveHijosCollection();
+                hijosSinRecorrer.addAll(hijos);
+                setHijos.addAll(hijos);
+            }
+            return setHijos;
+        }
+
+        public int descendientesNum(){
+
+            LCRSnode<T> nodo = this;
+            LinkedList<LCRSnode<T>> hijosSinRecorrer = new LinkedList<LCRSnode<T>>();
             int numHijos = 0;
             Collection<LCRSnode<T>> hijos = nodo.devuelveHijosCollection();
             numHijos += hijos.size();
-            setHijos.addAll(hijos);
-            while (setHijos.size() > 0){
-                LCRSnode<T>
+            hijosSinRecorrer.addAll(hijos);
+            while (hijosSinRecorrer.size() > 0){
+                LCRSnode<T> hijoActual = hijosSinRecorrer.poll();
+                hijos = hijoActual.devuelveHijosCollection();
+                hijosSinRecorrer.addAll(hijos);
+                numHijos += hijos.size();
             }
-        }*/
+            return numHijos;
+        }
 
     }
 
@@ -195,17 +219,38 @@ public class LCRSTree<E> implements NAryTree<E> {
 
     @Override
     public E replace(Position<E> p, E e) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        //throw new UnsupportedOperationException("Not supported yet.");
+        LCRSnode<E> nodo = checkPosition(p);
+        E old = nodo.getElement();
+        nodo.setElement(e);
+        return old;
     }
 
     @Override
     public void remove(Position<E> p) {
         //throw new UnsupportedOperationException("Not supported yet.");
         LCRSnode<E> borrar = checkPosition(p);
-        LCRSnode<E> padre = borrar.getParent();
-        LCRSnode<E> primerHijo = borrar.getChild();
-        //if ()
-    }
+        if (isRoot(borrar)) {
+            this.arbol = null;
+            this.size = 0;
+        }else {
+            LCRSnode<E> padre = borrar.getParent();
+            LCRSnode<E> primerHijo = padre.getChild();
+            LCRSnode<E> sigHijo = primerHijo;
+            LCRSnode<E> antHijo = primerHijo;
+            while (sigHijo != borrar) {
+                antHijo = sigHijo;
+                sigHijo = sigHijo.getSibling();
+            } // antHijo es el hermano anterior a borrar, sigHijo es borrar
+            if (sigHijo.getSibling() == null) { // Si borrar no tiene hermano
+                antHijo.setSibling(null);
+            } else { // Si borrar tiene algún hermano
+                antHijo.setSibling(sigHijo.getSibling());
+            }
+            this.size -= borrar.descendientesNum() + 1;
+
+            }
+        }
 
     @Override
     public NAryTree<E> subTree(Position<E> v) {
@@ -261,7 +306,9 @@ public class LCRSTree<E> implements NAryTree<E> {
 
     @Override
     public Iterator<Position<E>> iterator() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        //throw new UnsupportedOperationException("Not supported yet.");
+        LCRSnode<E> raiz = this.arbol;
+        return raiz.iteratorSet().iterator();
     }
 
     public int size() {
